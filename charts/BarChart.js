@@ -6,6 +6,7 @@ function _verifyConfig(cfg) {
 		"yPos",
 		"barRatio",
 		"dataKey",
+		"labelKey"
 	];
 
 	let missing = REQUIRED.filter((k) => cfg[k] === null);
@@ -17,7 +18,8 @@ function _verifyConfig(cfg) {
 	cfg.lineColour = cfg.lineColour ?? "#000000";
 	cfg.lineWeight = cfg.lineWeight ?? 1;
 	cfg.barColour = cfg.barColour ?? "#ffffff";
-	cfg.label = cfg.label ?? { textSize: 15, rotation: 90, dataKey: "Week" };
+	cfg.label = cfg.label ?? { textSize: 15, rotation: 90 };
+	cfg.label.dataKey = cfg.labelKey;
 }
 
 class BarChart {
@@ -46,18 +48,48 @@ class BarChart {
 		push();
 		translate(this.gapWidth, 0);
 
-		let dataMax = max(this.data.map((d) => d[this.dataKey]));
+		let dataMax;
+		if (Array.isArray(this.dataKey)) {
+			dataMax = max(
+				this.data.map((d) =>
+					this.dataKey
+						.map(function (k) {
+							return d[k];
+						})
+						.reduce(function (p, a) {
+							return Number(p) + Number(a);
+						}, 0)
+				)
+			);
+		} else {
+			dataMax = max(this.data.map((d) => Number(d[this.dataKey])));
+		}
 
 		for (let i = 0; i < this.data.length; i++) {
 			let row = this.data[i];
-			let d = row[this.dataKey];
 
 			fill(this.barColour);
 			stroke(this.lineColour);
 			strokeWeight(this.lineWeight);
 
-			let h = this.chartHeight * (d / dataMax);
-			rect(0, 0, this.barWidth, -h);
+			// Logic for multiple array keys
+			if (Array.isArray(this.dataKey)) {
+				push();
+				for (let k of this.dataKey) {
+					let d = row[k];
+
+					let h = this.chartHeight * (d / dataMax);
+					rect(0, 0, this.barWidth, -h);
+					translate(0, -h);
+				}
+				pop();
+			} else {
+				let d = row[this.dataKey];
+
+				let h = Math.round(this.chartHeight * (d / dataMax));
+				rect(0, 0, this.barWidth, -h);
+			}
+
 			translate(this.gapWidth + this.barWidth, 0);
 
 			push();
@@ -69,7 +101,7 @@ class BarChart {
 			textAlign(LEFT, CENTER);
 			angleMode(DEGREES);
 
-			translate(-15, 20);
+			translate(-65, 20);
 			rotate(this.label.rotation);
 
 			let labelText = row[this.label.dataKey];
