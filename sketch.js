@@ -6,13 +6,12 @@ const backgroundColour = "#000000";
 
 function preload() {
 	// rawData = loadTable("data/traffic.csv.bck", "csv", "header");
-	rawData = loadTable("data/children.csv", "csv", "header");
+	rawData = loadTable("data/children2.csv", "csv", "header");
 }
 
 function setup() {
 	createCanvas(screenCfg.width, screenCfg.height);
 	data = rawData.rows.map((d) => d.obj);
-	console.log(data);
 
 	bars.push(
 		new BarChart(
@@ -22,19 +21,13 @@ function setup() {
 				xPos: 100,
 				yPos: 400,
 				barRatio: 0.5,
-				dataKey: "VALUE",
+				dataKey: ["Male", "Female"],
 				lineColour: "#ffffff",
 				lineWeight: 2,
-				barColour: "#ff00ff",
+				barColour: ["#ff00ff", "#aa00aa"],
 				labelKey: "Age Group",
 			},
 			data
-				// Filter out individual counties
-				.filter(
-					(r) =>
-						r["Administrative Counties"] === "Ireland" &&
-						r["Sex"] === "Both sexes"
-				)
 				// Filter out Total rows
 				.filter((r) => r["Age Group"] !== "0 - 17 years")
 		)

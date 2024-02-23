@@ -6,7 +6,7 @@ function _verifyConfig(cfg) {
 		"yPos",
 		"barRatio",
 		"dataKey",
-		"labelKey"
+		"labelKey",
 	];
 
 	let missing = REQUIRED.filter((k) => cfg[k] === null);
@@ -68,14 +68,14 @@ class BarChart {
 		for (let i = 0; i < this.data.length; i++) {
 			let row = this.data[i];
 
-			fill(this.barColour);
 			stroke(this.lineColour);
 			strokeWeight(this.lineWeight);
 
 			// Logic for multiple array keys
 			if (Array.isArray(this.dataKey)) {
 				push();
-				for (let k of this.dataKey) {
+				for (let [i, k] of Object.entries(this.dataKey)) {
+					fill(this.barColour[i]);
 					let d = row[k];
 
 					let h = this.chartHeight * (d / dataMax);
@@ -84,6 +84,7 @@ class BarChart {
 				}
 				pop();
 			} else {
+				fill(this.barColour);
 				let d = row[this.dataKey];
 
 				let h = Math.round(this.chartHeight * (d / dataMax));
@@ -120,13 +121,16 @@ class BarChart {
 			fill(this.lineColour);
 			noStroke();
 
-			let row = this.data[i];
+			// let row = this.data[i];
 
 			textSize(this.label.textSize);
 			textAlign(RIGHT, CENTER);
 
-			let labelText = row["VALUE"];
-			text(labelText, -40, 0);
+			// let labelText = row["VALUE"];
+
+			if (i == nTicks) {
+				text(dataMax, -40, 0);
+			}
 
 			translate(0, -tickGap);
 		}
