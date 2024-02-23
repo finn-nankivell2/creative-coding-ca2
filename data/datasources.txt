@@ -1,0 +1,2 @@
+title.basics.tsv: https://datasets.imdbws.com/title.basics.tsv.gz
+title.ratings.tsv: https://datasets.imdbws.com/title.ratings.tsv.gz
