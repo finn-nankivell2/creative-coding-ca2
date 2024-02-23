@@ -22,6 +22,7 @@
 				yPos: 10,
 				barRatio: 0.6,
 				dataKey: "key",
+				chartType: "bar"
 			};
 
 			_verifyConfig(cfgObject);
