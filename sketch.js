@@ -2,10 +2,10 @@ const screenCfg = { width: window.innerWidth, height: window.innerHeight };
 let bars = [];
 let rawData;
 let data;
-const backgroundColour = "#000000";
+const backgroundColour = "#070909";
 
 function preload() {
-	rawData = loadTable("data/children2.csv", "csv", "header");
+	rawData = loadTable("data/outputs/ratingdist.csv", "csv", "header");
 }
 
 function setup() {
@@ -15,85 +15,20 @@ function setup() {
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 340,
-				chartHeight: 150,
+				chartWidth: 800,
+				chartHeight: 400,
 				xPos: 150,
-				yPos: 350,
-				barRatio: 0.6,
-				// dataKey: ["Male", "Female"],
-				dataKey: "Total",
-				lineColour: "#ffffff",
+				yPos: 50,
+				barRatio: 1.0,
+				dataKey: "COUNT",
+				lineColour: "#c7c8c3",
 				lineWeight: 2,
-				barColour: ["#ff00ff", "#aa00aa", "#5577ff"],
-				labelKey: "Age Group",
+				barColour: ["#a7b34d", "#aa00aa", "#5577ff"],
+				// barColour: ["#ffffff", "#aa00aa", "#5577ff"],
+				labelKey: "RANGE",
 				chartType: "bar"
 			},
 			data
-				// Filter out Total rows
-				.filter((r) => r["Age Group"] !== "0 - 17 years")
-		)
-	);
-
-	bars.push(
-		new BarChart(
-			{
-				chartWidth: 340,
-				chartHeight: 150,
-				xPos: 100,
-				yPos: 50,
-				barRatio: 0.6,
-				dataKey: ["Male", "Female", "Total"],
-				lineColour: "#ffffff",
-				lineWeight: 2,
-				barColour: ["#ff00ff", "#aa00aa", "#5577ff"],
-				labelKey: "Age Group",
-				chartType: "clustered"
-			},
-			data
-				// Filter out Total rows
-				.filter((r) => r["Age Group"] !== "0 - 17 years")
-		)
-	);
-
-	bars.push(
-		new BarChart(
-			{
-				chartWidth: 340,
-				chartHeight: 150,
-				xPos: 600,
-				yPos: 50,
-				barRatio: 0.6,
-				dataKey: ["Male", "Female"],
-				lineColour: "#ffffff",
-				lineWeight: 2,
-				barColour: ["#ff00ff", "#aa00aa", "#5577ff"],
-				labelKey: "Age Group",
-				chartType: "stacked"
-			},
-			data
-				// Filter out Total rows
-				.filter((r) => r["Age Group"] !== "0 - 17 years")
-		)
-	);
-
-	bars.push(
-		new BarChart(
-			{
-				chartWidth: 340,
-				chartHeight: 150,
-				xPos: 650,
-				yPos: 360,
-				barRatio: 0.6,
-				dataKey: ["Male", "Female"],
-				lineColour: "#ffffff",
-				lineWeight: 2,
-				barColour: ["#ff00ff", "#aa00aa", "#5577ff"],
-				labelKey: "Age Group",
-				chartType: "fullstacked"
-			},
-			data
-				// Filter out Total rows
-				.filter((r) => r["Age Group"] !== "0 - 17 years")
 		)
 	);
 }

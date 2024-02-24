@@ -71,8 +71,31 @@ def extract_movie_variants(reader, writer):
 
 @readswrites(TITLE_BASICS, "outputs/genrecounts.csv")
 def count_movie_genres(reader, writer):
-	counter = Counter(filter(lambda x: x, map(lambda row: row[8] if len(row) >= 9 else None, reader)))
-	print(counter)
+
+	def filtered_genres(reader):
+		for row in reader:
+			if len(row) < 9:
+				continue
+
+			genres = row[8].split(",")
+			yield genres
+
+	counter = Counter(itertools.chain(*list(filtered_genres(reader))))
+
+	writer.writerow(["GENRE", "COUNT"])
+
+	for genre, count in counter.items():
+		writer.writerow([genre, count])
+
+
+@readswrites(TITLE_BASICS, "outputs/runtimecounts.csv")
+def count_movie_runtimes(reader, writer):
+	counter = Counter(filter(str.isnumeric, map(lambda row: row[7], reader)))
+
+	writer.writerow(["RUNTIME", "COUNT"])
+
+	for genre, count in sorted(filter(lambda x: x[1] >= 0, counter.items()), key=lambda x: int(x[0])):
+		writer.writerow([genre, count])
 
 
 @reads(TITLE_RATINGS)
@@ -106,13 +129,14 @@ def extract_movie_rating_distribution(reader, writer):
 		writer.writerow(row)
 
 
-
 def main():
 	jobs = [
+		# Put all jobs to run in here
 		# extract_movie_variants,
-		# coumovgenres,
 		# compute_average_rating,
-		extract_movie_rating_distribution,
+		# extract_movie_rating_distribution,
+		# count_movie_genres,
+		count_movie_runtimes,
 	]
 
 	for job in jobs:
