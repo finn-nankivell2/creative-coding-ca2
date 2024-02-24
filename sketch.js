@@ -5,7 +5,7 @@ let data;
 const backgroundColour = "#070909";
 
 function preload() {
-	rawData = loadTable("data/outputs/ratingdist.csv", "csv", "header");
+	rawData = loadTable("data/outputs/ratingpop.csv", "csv", "header");
 }
 
 function setup() {
@@ -15,18 +15,21 @@ function setup() {
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 800,
-				chartHeight: 400,
+				chartWidth: 600,
+				chartHeight: 200,
 				xPos: 150,
-				yPos: 50,
-				barRatio: 1.0,
-				dataKey: "COUNT",
+				yPos: 150,
+				barRatio: 0.6,
+				dataKey: ["POPULARITY", "RATING"],
 				lineColour: "#c7c8c3",
 				lineWeight: 2,
-				barColour: ["#a7b34d", "#aa00aa", "#5577ff"],
-				// barColour: ["#ffffff", "#aa00aa", "#5577ff"],
-				labelKey: "RANGE",
-				chartType: "bar"
+				barColour: ["#a7b34d", "#42b0c6", "#5577ff"],
+				labelKey: "MOVIE",
+				labelRotation: 45,
+				chartType: "clustered",
+				nTicks: 10,
+				leftTicks: 10.0,
+				rotation: -45
 			},
 			data
 		)

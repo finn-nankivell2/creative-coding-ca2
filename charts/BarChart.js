@@ -29,11 +29,12 @@ function _verifyConfig(cfg) {
 		);
 	}
 
+	cfg.nTicks = cfg.nTicks ?? 6;
 	cfg.lineColour = cfg.lineColour ?? "#000000";
 	cfg.lineWeight = cfg.lineWeight ?? 1;
 	cfg.barColour = cfg.barColour ?? "#ffffff";
-	cfg.label = cfg.label ?? { textSize: 15, rotation: 90 };
-	cfg.label.dataKey = cfg.labelKey;
+	cfg.labelRotation = cfg.labelRotation ?? 90;
+	cfg.labelTextSize = cfg.labelTextSize ?? 15;
 }
 
 class BarChart {
@@ -82,8 +83,8 @@ class BarChart {
 		return dataMax;
 	}
 
-	_getDataTicks(n) {
-		let dataMax = this._getDataMax();
+	_getDataTicks(n, dataMax, floored = true) {
+		dataMax = dataMax ?? this._getDataMax();
 
 		let ticks = [];
 		let step = dataMax / n;
@@ -94,7 +95,7 @@ class BarChart {
 				value = dataMax;
 			}
 
-			ticks.push(Math.floor(value));
+			ticks.push(floored ? Math.floor(value) : Math.round(value, 2));
 			value += step;
 		}
 
@@ -160,39 +161,62 @@ class BarChart {
 			fill(this.lineColour);
 			noStroke();
 
-			textSize(this.label.textSize);
+			textSize(this.labelTextSize);
 			textAlign(LEFT, CENTER);
 			angleMode(DEGREES);
 
-			rotate(-45);
+			translate(-this.barWidth, this.barWidth / 2);
+			rotate(this.labelRotation);
 
-			translate(-65, -20);
-			rotate(this.label.rotation);
-
-			let labelText = row[this.label.dataKey];
+			let labelText = row[this.labelKey];
 			text(labelText, 0, 0);
 
 			pop();
 		}
 		pop();
 
-		let nTicks = 6;
-		let tickGap = this.chartHeight / (nTicks - 1);
-		let tickValues = this._getDataTicks(nTicks);
+		let tickGap = this.chartHeight / (this.nTicks - 1);
+		let tickValues = this._getDataTicks(this.nTicks);
 		let tickWidth = 20;
 
-		for (let i = 0; i < nTicks; i++) {
+		push();
+		for (let i = 0; i < this.nTicks; i++) {
 			stroke(this.lineColour);
 			line(0, 0, -tickWidth, 0);
 
 			fill(this.lineColour);
 			noStroke();
 
-			textSize(this.label.textSize);
+			textSize(this.labelTextSize);
 			textAlign(RIGHT, CENTER);
 			text(tickValues.shift(), -tickWidth * 1.5, 0);
 
 			translate(0, -tickGap);
+		}
+		pop();
+
+		if (this.leftTicks) {
+			push();
+			translate(this.chartWidth, 0);
+			tickValues = this._getDataTicks(this.nTicks, this.leftTicks, false);
+
+			stroke(this.lineColour);
+			line(0, 0, 0, -this.chartHeight);
+
+			for (let i = 0; i < this.nTicks; i++) {
+				stroke(this.lineColour);
+				line(0, 0, tickWidth, 0);
+
+				fill(this.lineColour);
+				noStroke();
+
+				textSize(this.labelTextSize);
+				textAlign(LEFT, CENTER);
+				text(tickValues.shift(), tickWidth * 1.5, 0);
+
+				translate(0, -tickGap);
+			}
+			pop();
 		}
 
 		pop();
