@@ -194,13 +194,12 @@ def calc_movie_rating_vs_popularity(reader, writer):
 def main():
 	jobs = [
 		# Put all jobs to run in here
-		# extract_movie_variants,
-		# compute_average_rating,
-		# extract_movie_rating_distribution,
-		# count_movie_genres,
-		# count_movie_runtimes,
-		# extract_movie_rating_distribution_detailed,
-		# count_movies_by_variant,
+		extract_movie_variants,
+		compute_average_rating,
+		extract_movie_rating_distribution,
+		count_movie_genres,
+		count_movie_runtimes,
+		count_movies_by_variant,
 		calc_movie_rating_vs_popularity,
 	]
 

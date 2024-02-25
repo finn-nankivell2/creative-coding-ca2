@@ -22,6 +22,7 @@ function _verifyConfig(cfg) {
 		"fullstacked",
 		"horizontal",
 		"clustered",
+		"pie"
 	];
 	if (!chartTypes.includes(cfg.chartType)) {
 		throw new Error(
@@ -48,8 +49,17 @@ class BarChart {
 		this.data = data ?? cfg.data;
 
 		let n = this.data.length;
-		this.barWidth = (this.chartWidth * this.barRatio) / n;
-		this.gapWidth = (this.chartWidth * (1.0 - this.barRatio)) / n;
+
+		if (this.chartType === "horizontal") {
+
+			this.barWidth = (this.chartHeight * this.barRatio) / n;
+			this.gapWidth = (this.chartHeight * (1.0 - this.barRatio)) / n;
+		}
+
+		else {
+			this.barWidth = (this.chartWidth * this.barRatio) / n;
+			this.gapWidth = (this.chartWidth * (1.0 - this.barRatio)) / n;
+		}
 	}
 
 	_getDataMax() {
@@ -102,7 +112,161 @@ class BarChart {
 		return ticks;
 	}
 
-	render() {
+	_renderPie() {
+		push();
+		translate(this.xPos, this.yPos);
+		stroke(this.lineColour);
+		strokeWeight(this.lineWeight);
+
+		fill(this.barColour[0]);
+		ellipseMode(CORNER);
+		ellipse(0, 0, this.chartWidth, this.chartHeight);
+
+		let angle = 0;
+		let dataMax = this._getDataMax();
+
+		for (let [i, row] of Object.entries(this.data)) {
+			fill(this.barColour[i % this.barColour.length]);
+
+			let d = row[this.dataKey];
+			let aratio = d/dataMax;
+			let a = TWO_PI * aratio;
+
+			arc(0, 0, this.chartWidth, this.chartHeight, angle, a);
+			angle += a;
+		}
+		pop();
+	}
+
+	// Render legend for any bar chart
+	_renderLegend() {
+		if (!this.legend) {
+			return;
+		}
+
+		push();
+		translate(this.xPos + this.chartWidth * 1.2, this.yPos);
+
+		stroke(this.lineColour);
+		textSize(this.labelTextSize);
+		textAlign(RIGHT, CENTER);
+
+		for (let [name, colour] of Object.entries(this.legend)) {
+			strokeWeight(this.lineWeight);
+			fill(colour);
+			rect(0, 0, this.labelTextSize, this.labelTextSize);
+
+			strokeWeight(0);
+			fill(this.lineColour);
+			textAlign(LEFT, TOP);
+			text(name, this.labelTextSize*2, 0);
+
+			translate(0, this.labelTextSize*2);
+		}
+		pop();
+	}
+
+	// Render horizontal bar chart
+	_renderHorizontal() {
+		push();
+		translate(this.xPos, this.yPos + this.chartHeight);
+		stroke(this.lineColour);
+		strokeWeight(this.lineWeight);
+		line(0, 0, 0, -this.chartHeight);
+		line(0, 0, this.chartWidth, 0);
+
+		push();
+		translate(0, -this.chartHeight);
+
+		let dataMax = this._getDataMax();
+
+		for (let i = 0; i < this.data.length; i++) {
+			let row = this.data[i];
+
+			stroke(this.lineColour);
+			strokeWeight(this.lineWeight);
+
+			fill(this.barColour[0]);
+			let d = row[this.dataKey];
+
+			let h = Math.round(this.chartWidth * (d / dataMax));
+			rect(0, 0, h, this.barWidth);
+
+			translate(0, this.gapWidth + this.barWidth);
+
+			push();
+
+			fill(this.lineColour);
+			noStroke();
+
+			textSize(this.labelTextSize);
+			textAlign(RIGHT, CENTER);
+			angleMode(DEGREES);
+
+			translate(-this.barWidth, -this.barWidth);
+			rotate(this.labelRotation);
+
+			let labelText = row[this.labelKey];
+			text(labelText, 0, 0);
+
+			pop();
+		}
+		pop();
+
+		let tickGap = this.chartWidth / (this.nTicks - 1);
+		let tickValues = this._getDataTicks(this.nTicks);
+		let tickWidth = 20;
+
+		push();
+		translate(0, tickWidth);
+		for (let i = 0; i < this.nTicks; i++) {
+			stroke(this.lineColour);
+			line(0, 0, 0, -tickWidth);
+
+			fill(this.lineColour);
+			noStroke();
+
+			push();
+			textSize(this.labelTextSize);
+			textAlign(CENTER, CENTER);
+			angleMode(DEGREES);
+
+			text(tickValues.shift(), 0, tickWidth * 1.5);
+
+			pop();
+			translate(tickGap, 0);
+		}
+		pop();
+
+		if (this.leftTicks) {
+			push();
+			translate(this.chartWidth, 0);
+			tickValues = this._getDataTicks(this.nTicks, this.leftTicks, false);
+
+			stroke(this.lineColour);
+			line(0, 0, 0, -this.chartHeight);
+
+			for (let i = 0; i < this.nTicks; i++) {
+				stroke(this.lineColour);
+				line(0, 0, tickWidth, 0);
+
+				fill(this.lineColour);
+				noStroke();
+
+				textSize(this.labelTextSize);
+				textAlign(LEFT, CENTER);
+				text(tickValues.shift(), tickWidth * 1.5, 0);
+
+				translate(0, -tickGap);
+			}
+			pop();
+		}
+
+		pop();
+	}
+
+
+	_renderNormal() {
 		push();
 		translate(this.xPos, this.yPos + this.chartHeight);
 		stroke(this.lineColour);
@@ -220,5 +384,22 @@ class BarChart {
 		}
 
 		pop();
+	}
+
+
+	render() {
+		if (this.chartType == "pie") {
+			this._renderPie();
+		}
+
+		else if (this.chartType == "horizontal") {
+			this._renderHorizontal();
+		}
+
+		else {
+			this._renderNormal();
+		}
+
+		this._renderLegend();
 	}
 }
