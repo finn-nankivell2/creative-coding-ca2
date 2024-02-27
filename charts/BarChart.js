@@ -22,7 +22,7 @@ function _verifyConfig(cfg) {
 		"fullstacked",
 		"horizontal",
 		"clustered",
-		"pie"
+		"pie",
 	];
 	if (!chartTypes.includes(cfg.chartType)) {
 		throw new Error(
@@ -51,18 +51,19 @@ class BarChart {
 		let n = this.data.length;
 
 		if (this.chartType === "horizontal") {
-
 			this.barWidth = (this.chartHeight * this.barRatio) / n;
 			this.gapWidth = (this.chartHeight * (1.0 - this.barRatio)) / n;
-		}
-
-		else {
+		} else {
 			this.barWidth = (this.chartWidth * this.barRatio) / n;
 			this.gapWidth = (this.chartWidth * (1.0 - this.barRatio)) / n;
 		}
 	}
 
 	_getDataMax() {
+		if (this.dataMaxDefault) {
+			return this.dataMaxDefault;
+		}
+
 		let dataMax;
 
 		if (this.chartType == "clustered") {
@@ -123,18 +124,37 @@ class BarChart {
 		ellipse(0, 0, this.chartWidth, this.chartHeight);
 
 		let angle = 0;
-		let dataMax = this._getDataMax();
+		let dataTotal = this.data
+			.map((row) => row[this.dataKey])
+			.reduce((a, b) => Number(a) + Number(b), 0);
 
 		for (let [i, row] of Object.entries(this.data)) {
-			fill(this.barColour[i % this.barColour.length]);
+			fill(this.barColour[i]);
 
 			let d = row[this.dataKey];
-			let aratio = d/dataMax;
-			let a = TWO_PI * aratio;
+			let aratio = d / dataTotal;
+			let a = 360 * aratio;
 
-			arc(0, 0, this.chartWidth, this.chartHeight, angle, a);
+			arc(0, 0, this.chartWidth, this.chartHeight, angle, angle+a);
 			angle += a;
 		}
+		pop();
+	}
+
+	_renderTitle() {
+		if (!this.chartTitle) {
+			return;
+		}
+
+		push();
+		translate(
+			this.xPos + this.chartWidth / 2,
+			this.yPos - this.barWidth * 2
+		);
+		textAlign(CENTER, CENTER);
+		textSize(this.labelTextSize * 1.2);
+		fill(this.lineColour);
+		text(this.chartTitle, 0, 0);
 		pop();
 	}
 
@@ -151,7 +171,7 @@ class BarChart {
 		textSize(this.labelTextSize);
 		textAlign(RIGHT, CENTER);
 
-		for (let [name, colour] of Object.entries(this.legend)) {
+		for (let [name, colour] of this.legend) {
 			strokeWeight(this.lineWeight);
 			fill(colour);
 			rect(0, 0, this.labelTextSize, this.labelTextSize);
@@ -159,9 +179,9 @@ class BarChart {
 			strokeWeight(0);
 			fill(this.lineColour);
 			textAlign(LEFT, TOP);
-			text(name, this.labelTextSize*2, 0);
+			text(name, this.labelTextSize * 2, 0);
 
-			translate(0, this.labelTextSize*2);
+			translate(0, this.labelTextSize * 2);
 		}
 		pop();
 	}
@@ -264,7 +284,6 @@ class BarChart {
 
 		pop();
 	}
-
 
 	_renderNormal() {
 		push();
@@ -386,20 +405,16 @@ class BarChart {
 		pop();
 	}
 
-
 	render() {
 		if (this.chartType == "pie") {
 			this._renderPie();
-		}
-
-		else if (this.chartType == "horizontal") {
+		} else if (this.chartType == "horizontal") {
 			this._renderHorizontal();
-		}
-
-		else {
+		} else {
 			this._renderNormal();
 		}
 
 		this._renderLegend();
+		this._renderTitle();
 	}
 }
