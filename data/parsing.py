@@ -106,6 +106,37 @@ def count_movie_runtimes(reader, writer):
 		writer.writerow([genre, count])
 
 
+@readswrites(TITLE_BASICS, "outputs/runtimecountsgrouped.csv")
+def count_movie_runtimes_grouped(reader, writer):
+	counter = Counter(map(int, filter(str.isnumeric, map(lambda row: row[7], reader))))
+
+	max_rt = 180
+	period = 10
+
+	logging.debug("Establishing initial ranges")
+	ranges = [(i, i+period) for i in range(0, max_rt, period)]
+	rangecounts = Counter()
+	# rangecounts = Counter(f"{s} - {e}" for s, e in ranges)
+	outside_range_count = 0
+
+	logging.debug("Counting into ranges")
+	for key, count in counter.items():
+		c = False
+		for start, end in ranges:
+			if start <= key < end:
+				rangecounts[f"{start} - {end}"] += count
+				c = True
+		if not c:
+			outside_range_count += count
+
+	writer.writerow(["RANGE", "COUNT"])
+
+	for genre, count in sorted(rangecounts.items(), key=lambda x: int(x[0].partition("-")[0])):
+		writer.writerow([genre, count])
+
+	writer.writerow([f"{max_rt}+", outside_range_count])
+
+
 @reads(TITLE_RATINGS)
 def compute_average_rating(reader):
 	logging.debug("Summing movie ratings")
@@ -201,6 +232,7 @@ def main():
 		count_movie_runtimes,
 		count_movies_by_variant,
 		calc_movie_rating_vs_popularity,
+		count_movie_runtimes_grouped
 	]
 
 	for job in jobs:

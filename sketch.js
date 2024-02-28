@@ -1,21 +1,24 @@
 // const screenCfg = { width: window.innerWidth, height: window.innerHeight };
-const screenCfg = { width: 1920, height: 1080 };
+const screenCfg = { width: 2000, height: 2000 };
 let bars = [];
 let rawData = {};
 let data = {};
 const backgroundColour = "#070909";
 const palette = [
-	"#cb514b",
-	"#69dea0",
-	"#45a8f0",
-	"#a85b8e",
-	"#daa6ab",
-	"#8f5296",
-	"#c93c8a",
-	"#579eec",
-	"#09f5c7",
-	"#0fe812",
+	"#6420AA",
+	"#FF3EA5",
+	"#FF7ED4",
+	"#FFB5DA",
+
+	"#6130Ad",
+	"#cF2E95",
+	"#cF4Ec4",
+	"#dF95dA",
+
+	"#A420cA",
+	"#af95da",
 ];
+const lineColour = "#cccccc";
 
 function preload() {
 	let files = [
@@ -24,6 +27,7 @@ function preload() {
 		"ratingdist",
 		"genrecounts",
 		"movietypecounts",
+		"runtimecountsgrouped"
 	];
 
 	for (let f of files) {
@@ -41,44 +45,53 @@ function setup() {
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 300,
-				chartHeight: 200,
-				xPos: 100,
+				chartWidth: 500,
+				chartHeight: 330,
+				xPos: 150,
 				yPos: 100,
 				barRatio: 0.6,
-				dataKey: ["RATING", "POPULARITY"],
-				lineColour: "#c7c8c3",
+				dataKey: ["POPULARITY", "RATING"],
+				lineColour: lineColour,
 				lineWeight: 2,
 				barColour: palette,
 				labelKey: "MOVIE",
-				labelRotation: 90,
+				labelRotation: 45,
 				chartType: "clustered",
 				nTicks: 10,
 				leftTicks: 10,
 				chartTitle: "IMDB Top movies num. ratings vs. average rating",
+				legend: [
+					["Number of ratings", palette[0]],
+					["Rating out of 10", palette[1]],
+				]
 			},
 			data.ratingpop
 		)
 	);
 
+
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 300,
-				chartHeight: 200,
-				xPos: 900,
+				chartWidth: 500,
+				chartHeight: 330,
+				xPos: 1000,
 				yPos: 100,
 				barRatio: 0.6,
 				dataKey: ["CRITIC", "AUDIENCE"],
 				dataMaxDefault: 100,
-				lineColour: "#c7c8c3",
+				lineColour: lineColour,
 				lineWeight: 2,
 				barColour: palette,
 				labelKey: "MOVIE",
-				labelRotation: 90,
-				chartType: "fullstacked",
+				labelRotation: 45,
+				chartType: "clustered",
 				nTicks: 10,
 				chartTitle: "Metacritic - Critic vs. Audience ratings",
+				legend: [
+					["Critic Score", palette[0]],
+					["Audience Score", palette[1]],
+				]
 			},
 			data.ratingpopvs
 		)
@@ -87,13 +100,39 @@ function setup() {
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 300,
-				chartHeight: 200,
-				xPos: 100,
-				yPos: 510,
+				chartWidth: 500,
+				chartHeight: 330,
+				xPos: 1200,
+				yPos: 700,
 				barRatio: 0.6,
+				dataKey: ["CRITIC", "AUDIENCE"],
+				lineColour: lineColour,
+				lineWeight: 2,
+				barColour: palette,
+				labelKey: "MOVIE",
+				labelRotation: 45,
+				chartType: "fullstacked",
+				nTicks: 10,
+				chartTitle: "Metacritic - Critic vs. Audience ratings",
+				legend: [
+					["Critic Score", palette[0]],
+					["Audience Score", palette[1]],
+				]
+			},
+			data.ratingpopvs
+		)
+	);
+
+	bars.push(
+		new BarChart(
+			{
+				chartWidth: 600,
+				chartHeight: 300,
+				xPos: 100,
+				yPos: 1600,
+				barRatio: 0.8,
 				dataKey: "COUNT",
-				lineColour: "#c7c8c3",
+				lineColour: lineColour,
 				lineWeight: 2,
 				barColour: palette,
 				labelKey: "RANGE",
@@ -106,15 +145,16 @@ function setup() {
 		)
 	);
 
+	bars.push(
 		new BarChart(
 			{
 				chartWidth: 400,
 				chartHeight: 400,
-				xPos: 900,
-				yPos: 100,
+				xPos: 1200,
+				yPos: 1550,
 				barRatio: 0.6,
 				dataKey: "COUNT",
-				lineColour: "#c7c8c3",
+				lineColour: lineColour,
 				lineWeight: 2,
 				barColour: palette,
 				labelKey: "RANGE",
@@ -129,29 +169,30 @@ function setup() {
 			},
 			data.ratingdist
 		)
+	);
 
 	bars.push(
 		new BarChart(
 			{
-				chartWidth: 300,
-				chartHeight: 200,
-				xPos: 520,
-				yPos: 100,
-				barRatio: 0.6,
-				dataKey: ["CRITIC", "AUDIENCE"],
-				dataMaxDefault: 100,
-				lineColour: "#c7c8c3",
+				chartWidth: 900,
+				chartHeight: 600,
+				xPos: 100,
+				yPos: 750,
+				barRatio: 0.8,
+				dataKey: "COUNT",
+				lineColour: lineColour,
 				lineWeight: 2,
 				barColour: palette,
-				labelKey: "MOVIE",
-				labelRotation: 90,
-				chartType: "clustered",
+				labelKey: "RANGE",
+				labelRotation: 0,
+				chartType: "horizontal",
 				nTicks: 10,
-				chartTitle: "Metacritic - Critic vs. Audience ratings",
+				chartTitle: "Distribution of movie runtimes (minutes)",
 			},
-			data.ratingpopvs
+			data.runtimecountsgrouped
 		)
-	);
+	)
+
 
 	background(backgroundColour);
 	bars.forEach((x) => x.render());

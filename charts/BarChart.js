@@ -1,3 +1,4 @@
+// Method to verify that the config passed to the BarChart constructor is valid
 function _verifyConfig(cfg) {
 	const REQUIRED = [
 		"chartWidth",
@@ -12,10 +13,12 @@ function _verifyConfig(cfg) {
 
 	let missing = REQUIRED.filter((k) => cfg[k] === null);
 
+	// Throw an error if missing essential parameters
 	if (missing.length != 0) {
 		throw new Error(`Missing parameters ${missing}`);
 	}
 
+	// The different valid values for chartType
 	let chartTypes = [
 		"bar",
 		"stacked",
@@ -24,12 +27,14 @@ function _verifyConfig(cfg) {
 		"clustered",
 		"pie",
 	];
+
 	if (!chartTypes.includes(cfg.chartType)) {
 		throw new Error(
 			`chartType must be one of ${chartTypes}, not ${this.chartType}`
 		);
 	}
 
+	// Fill in default values
 	cfg.nTicks = cfg.nTicks ?? 6;
 	cfg.lineColour = cfg.lineColour ?? "#000000";
 	cfg.lineWeight = cfg.lineWeight ?? 1;
@@ -40,14 +45,15 @@ function _verifyConfig(cfg) {
 
 class BarChart {
 	constructor(cfg, data) {
+		// Check for invalid config
 		_verifyConfig(cfg);
 
+		// Merge the config and BarChart object
 		for (let [k, v] of Object.entries(cfg)) {
 			this[k] = v;
 		}
 
 		this.data = data ?? cfg.data;
-
 		let n = this.data.length;
 
 		if (this.chartType === "horizontal") {
@@ -59,6 +65,7 @@ class BarChart {
 		}
 	}
 
+	// Get the maximum value in the dataset
 	_getDataMax() {
 		if (this.dataMaxDefault) {
 			return this.dataMaxDefault;
@@ -66,6 +73,7 @@ class BarChart {
 
 		let dataMax;
 
+		// Different rules for dataMax based on chartType
 		if (this.chartType == "clustered") {
 			dataMax = max(
 				this.data.map((d) =>
@@ -94,6 +102,7 @@ class BarChart {
 		return dataMax;
 	}
 
+	// Get an array of numbers representing tick values
 	_getDataTicks(n, dataMax, floored = true) {
 		dataMax = dataMax ?? this._getDataMax();
 
@@ -113,6 +122,7 @@ class BarChart {
 		return ticks;
 	}
 
+	// Render the pie chart
 	_renderPie() {
 		push();
 		translate(this.xPos, this.yPos);
@@ -123,15 +133,17 @@ class BarChart {
 		ellipseMode(CORNER);
 		ellipse(0, 0, this.chartWidth, this.chartHeight);
 
+		// Start the angle at 0
 		let angle = 0;
 		let dataTotal = this.data
 			.map((row) => row[this.dataKey])
 			.reduce((a, b) => Number(a) + Number(b), 0);
 
 		for (let [i, row] of Object.entries(this.data)) {
-			fill(this.barColour[i]);
+			fill(this.barColour[i % this.barColour.length]);
 
 			let d = row[this.dataKey];
+			// Calculate what percentage of the pie chart should be taken up by the current slice
 			let aratio = d / dataTotal;
 			let a = 360 * aratio;
 
@@ -141,6 +153,7 @@ class BarChart {
 		pop();
 	}
 
+	// Render the chart title
 	_renderTitle() {
 		if (!this.chartTitle) {
 			return;
@@ -200,18 +213,22 @@ class BarChart {
 
 		let dataMax = this._getDataMax();
 
+		// Iterate over all the data
 		for (let i = 0; i < this.data.length; i++) {
 			let row = this.data[i];
 
 			stroke(this.lineColour);
 			strokeWeight(this.lineWeight);
 
-			fill(this.barColour[0]);
 			let d = row[this.dataKey];
+			let rat = d / dataMax;
 
-			let h = Math.round(this.chartWidth * (d / dataMax));
+			let h = Math.round(this.chartWidth * rat);
+
+			fill(lerpColor(color(this.barColour[0]), color(this.barColour[1]), rat));
 			rect(0, 0, h, this.barWidth);
 
+			// Translate down
 			translate(0, this.gapWidth + this.barWidth);
 
 			push();
@@ -233,6 +250,7 @@ class BarChart {
 		}
 		pop();
 
+		// Calculate the gap between ticks
 		let tickGap = this.chartWidth / (this.nTicks - 1);
 		let tickValues = this._getDataTicks(this.nTicks);
 		let tickWidth = 20;
@@ -298,6 +316,7 @@ class BarChart {
 
 		let dataMax = this._getDataMax();
 
+		// Iterate over the data rows
 		for (let i = 0; i < this.data.length; i++) {
 			let row = this.data[i];
 
@@ -306,6 +325,7 @@ class BarChart {
 
 			// Logic for multiple array keys
 			if (Array.isArray(this.dataKey)) {
+				// If the chart is fullstacked then the data is equal to the sum of all dataKey columns, not the maximum value in the dataset
 				if (this.chartType == "fullstacked") {
 					dataMax = this.dataKey
 						.map((k) => row[k])
@@ -330,14 +350,14 @@ class BarChart {
 				}
 				pop();
 			} else {
-				fill(this.barColour[0]);
 				let d = row[this.dataKey];
+				let rat = d / dataMax;
+				let h = Math.round(this.chartHeight * rat);
 
-				let h = Math.round(this.chartHeight * (d / dataMax));
+				fill(lerpColor(color(this.barColour[0]), color(this.barColour[1]), rat));
 				rect(0, 0, this.barWidth, -h);
 			}
 
-			translate(this.gapWidth + this.barWidth, 0);
 
 			push();
 
@@ -348,13 +368,18 @@ class BarChart {
 			textAlign(LEFT, CENTER);
 			angleMode(DEGREES);
 
-			translate(-this.barWidth, this.barWidth / 2);
+			translate(0, this.barWidth);
+
+			push();
 			rotate(this.labelRotation);
 
 			let labelText = row[this.labelKey];
 			text(labelText, 0, 0);
+			pop();
 
 			pop();
+
+			translate(this.gapWidth + this.barWidth, 0);
 		}
 		pop();
 
@@ -378,6 +403,7 @@ class BarChart {
 		}
 		pop();
 
+		// If the config was passed leftTicks then render them
 		if (this.leftTicks) {
 			push();
 			translate(this.chartWidth, 0);
@@ -405,6 +431,7 @@ class BarChart {
 		pop();
 	}
 
+	// Choose a rendering function based on chartType
 	render() {
 		if (this.chartType == "pie") {
 			this._renderPie();
@@ -414,6 +441,7 @@ class BarChart {
 			this._renderNormal();
 		}
 
+		// Run common rendering functions
 		this._renderLegend();
 		this._renderTitle();
 	}
